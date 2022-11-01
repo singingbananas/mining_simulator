@@ -51,7 +51,22 @@
 #define SELFISH_GAMMA 0.0 //fraction of network favoring your side in a dead tie
 //half way and miners have equal hash power
 
-int main(int, const char * []) {
+// 
+BlockTime GetUniformRandomNetworkDelay(){
+    static std::random_device rd;  // Will be used to obtain a seed for the random number engine
+    static std::mt19937 gen(rd()); // Standard mersenne_twister_engine seeded with rd()
+    static std::uniform_real_distribution<> dis(0, 10.0); // 
+    return BlockTime(dis(gen));
+}
+
+BlockTime GetPoissonNetworkDelay(){
+    static std::default_random_engine generator;
+    static std::poisson_distribution<double> distribution(123456789); // find mean network latency in US ?
+    return BlockTime(distribution(generator));
+}
+
+
+int main(int, const char * argv[]) {
     
     int numberOfGames = 25;
     
