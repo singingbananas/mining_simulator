@@ -98,6 +98,7 @@ int main(int, const char * argv[]) {
     std::ofstream plot;
     plot.open("selfishMiningPlot2.txt");
     
+    plot << "Selfish Miner Network Delay, Honest Miner Network Delay, Selfish Miner Profit" << std::endl;
     //start running games
     for (int gameNum = 1; gameNum <= numberOfGames; gameNum++) {
         
@@ -116,11 +117,13 @@ int main(int, const char * argv[]) {
 //        auto defaultStrat = createPettyStrategy(NOISE_IN_TRANSACTIONS, SELFISH_GAMMA);
         auto defaultStrat = createDefaultSelfishStrategy(NOISE_IN_TRANSACTIONS, SELFISH_GAMMA);
         auto selfishStrat = createSelfishStrategy(NOISE_IN_TRANSACTIONS);
+        auto selfishMinerNetworkDelay = GetUniformRandomNetworkDelay();
+        auto honestMinerNetworkDelay = GetUniformRandomNetworkDelay();
         MinerParameters selfishMinerParams = {0, std::to_string(0), selfishPower, NETWORK_DELAY, COST_PER_SEC_TO_MINE};
-        MinerParameters defaultinerParams = {1, std::to_string(1), HashRate(1.0) - selfishPower, NETWORK_DELAY, COST_PER_SEC_TO_MINE};
+        MinerParameters defaultMinerParams = {1, std::to_string(1), HashRate(1.0) - selfishPower, NETWORK_DELAY, COST_PER_SEC_TO_MINE};
         
         miners.push_back(std::make_unique<Miner>(selfishMinerParams, *selfishStrat));
-        miners.push_back(std::make_unique<Miner>(defaultinerParams, *defaultStrat));
+        miners.push_back(std::make_unique<Miner>(defaultMinerParams, *defaultStrat));
         
         MinerGroup minerGroup(std::move(miners));
         
@@ -149,7 +152,8 @@ int main(int, const char * argv[]) {
         
         auto fractionOfProfits = valuePercentage(minerResults[0].totalProfit, result.moneyInLongestChain);
         GAMEINFO("Fraction earned by selfish:" << fractionOfProfits << " with " << selfishPower << " fraction of hash power" << std::endl);
-        plot << selfishPower << " " << fractionOfProfits << std::endl;
+        // plot << selfishPower << " " << fractionOfProfits << std::endl;
+        plot << selfishMinerNetworkDelay << ", " << honestMinerNetworkDelay << ", " << fractionOfProfits << std::endl;
         
     }
     
