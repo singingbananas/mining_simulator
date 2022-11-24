@@ -153,7 +153,7 @@ int main(int, const char * argv[]) {
         auto fractionOfProfits = valuePercentage(minerResults[0].totalProfit, result.moneyInLongestChain);
         GAMEINFO("Fraction earned by selfish:" << fractionOfProfits << " with " << selfishPower << " fraction of hash power" << std::endl);
         // plot << selfishPower << " " << fractionOfProfits << std::endl;
-        plot << selfishMinerNetworkDelay << ", " << honestMinerNetworkDelay << ", " << fractionOfProfits << std::endl;
+        plot << fractionOfProfits << ", " << selfishMinerNetworkDelay << ", " << honestMinerNetworkDelay << std::endl;
         
     }
     
