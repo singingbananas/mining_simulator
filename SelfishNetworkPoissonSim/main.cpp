@@ -65,8 +65,8 @@ BlockTime GetUniformRandomNetworkDelay(){
 
 BlockTime GetPoissonNetworkDelay(){
     static std::default_random_engine generator;
-    static std::poisson_distribution<double> distribution(0.89); 
-    return BlockTime(distribution(generator));
+    static std::poisson_distribution<uint> distribution(890); 
+    return BlockTime(distribution(generator)/1000.0);
 }
 
 BlockTime GetLinearNetworkDelay(int game_number) {
@@ -77,11 +77,6 @@ BlockTime GetExponentialNetworkDelay(int game_number){
     return HONEST_NETWORK_DELAY + BlockTime(pow(10, game_number - NUM_GAMES/2)); // make this make sense ! grows too fast.. how to slow down?
 }
 
-BlockValue GetPoissonBlockValue(int lambda){ 
-    static std::default_random_engine generator;
-    static std::poisson_distribution<double> distribution(lambda);  // lambda is 0.127551, 6.37755, 25
-    return BlockValue(distribution(generator));
-}
 
 BlockValue GetLinearCostOfMining(int game_number) {
     return COST_PER_SEC_TO_MINE + BlockValue(game_number * SATOSHI_VALUE * 100);  
@@ -89,22 +84,27 @@ BlockValue GetLinearCostOfMining(int game_number) {
 
 int main(int, const char * argv[]) {
     
-    int numberOfGames = NUM_GAMES;
+    int numberOfGames = atoi(argv[1]);
+    int percentageAlpha = atoi(argv[2]);
+    int returnZero = atoi(argv[3]);
+    char  filename[1024] = {0};
+    sprintf(filename, "%s_%s_%s_%s.txt", argv[0], argv[1], argv[2], argv[3]);
+
     
     //#########################################################################################
     //idea of simulation: 2 miners, only an honest, and a selfish miner. Run many games, with the
     //size of the two changing. Plot the expected profit vs. actual profit. (reproduce fig 2 in selfish paper)
     GAMEINFO("#####\nRunning Selfish Mining Simulation\n#####" << std::endl);
     std::ofstream plot;
-    plot.open("selfishMiningPlot2.txt");
-    
+    plot.open(filename);
+    plot << "Selfish Miner Profit, Selfish Miner Network Delay, Honest Miner Network Delay" << std::endl;
     //start running games
     for (int gameNum = 1; gameNum <= numberOfGames; gameNum++) {
         
         std::vector<std::unique_ptr<Miner>> miners;
         
         // Scale power to reach %50 on the last game
-        HashRate selfishPower = HashRate(.5*(1.0 / numberOfGames) * gameNum);
+        HashRate selfishPower = HashRate(percentageAlpha/100.0);
 //        auto defaultStrat = createDefaultSelfishStrategy(NOISE_IN_TRANSACTIONS, SELFISH_GAMMA);
 //        auto selfishStrat = createSelfishStrategy(NOISE_IN_TRANSACTIONS);
         
@@ -116,8 +116,12 @@ int main(int, const char * argv[]) {
 //        auto defaultStrat = createPettyStrategy(NOISE_IN_TRANSACTIONS, SELFISH_GAMMA);
         auto defaultStrat = createDefaultSelfishStrategy(NOISE_IN_TRANSACTIONS, SELFISH_GAMMA);
         auto selfishStrat = createSelfishStrategy(NOISE_IN_TRANSACTIONS);
-        MinerParameters selfishMinerParams = {0, std::to_string(0), selfishPower, NETWORK_DELAY, COST_PER_SEC_TO_MINE};
-        MinerParameters defaultinerParams = {1, std::to_string(1), HashRate(1.0) - selfishPower, NETWORK_DELAY, COST_PER_SEC_TO_MINE};
+
+        auto selfishMinerNetworkDelay = GetPoissonNetworkDelay();
+        auto honestMinerNetworkDelay = GetPoissonNetworkDelay();
+
+        MinerParameters selfishMinerParams = {0, std::to_string(0), selfishPower, selfishMinerNetworkDelay, COST_PER_SEC_TO_MINE};
+        MinerParameters defaultinerParams = {1, std::to_string(1), HashRate(1.0) - selfishPower, honestMinerNetworkDelay, COST_PER_SEC_TO_MINE};
         
         miners.push_back(std::make_unique<Miner>(selfishMinerParams, *selfishStrat));
         miners.push_back(std::make_unique<Miner>(defaultinerParams, *defaultStrat));
@@ -150,7 +154,7 @@ int main(int, const char * argv[]) {
         auto fractionOfProfits = valuePercentage(minerResults[0].totalProfit, result.moneyInLongestChain);
         GAMEINFO("Fraction earned by selfish:" << fractionOfProfits << " with " << selfishPower << " fraction of hash power" << std::endl);
         // plot << selfishPower << " " << fractionOfProfits << std::endl;
-        plot << selfishNetworkDelay << " " << fractionOfProfits << std::endl;
+        plot << fractionOfProfits << ", " << selfishMinerNetworkDelay << ", " << honestMinerNetworkDelay << std::endl;
         
     }
     

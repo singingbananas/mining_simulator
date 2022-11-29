@@ -47,7 +47,7 @@
 //#define B BlockValue(3.125) // Block reward
 #define A (TOTAL_BLOCK_VALUE - B)/SEC_PER_BLOCK  //rate transactions come in
 
-#define SELFISH_GAMMA 0.5 //fraction of network favoring your side in a dead tie between honest and selfish blocks. treat it as a coin toss.
+#define SELFISH_GAMMA 0.0 //fraction of network favoring your side in a dead tie between honest and selfish blocks. treat it as a coin toss.
 //half way and miners have equal hash power
 
 #define HONEST_NETWORK_DELAY BlockTime(0)  // can be changed per each simulation 

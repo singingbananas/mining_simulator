@@ -85,7 +85,7 @@ using ValueRate = ValueType;
 using BlockValue = ValueType;
 
 using BlockHeight = HeightType;
-using BlockTime = TimeType;
+using BlockTime = RateType;
 using BlockRate = TimeType;
 using BlockCount = CountType;
 

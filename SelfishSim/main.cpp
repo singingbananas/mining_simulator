@@ -65,7 +65,7 @@ BlockTime GetUniformRandomNetworkDelay(){
 
 BlockTime GetPoissonNetworkDelay(){
     static std::default_random_engine generator;
-    static std::poisson_distribution<double> distribution(0.89); 
+    static std::poisson_distribution<long unsigned int> distribution(1); 
     return BlockTime(distribution(generator));
 }
 
@@ -79,7 +79,7 @@ BlockTime GetExponentialNetworkDelay(int game_number){
 
 BlockValue GetPoissonBlockValue(int lambda){ 
     static std::default_random_engine generator;
-    static std::poisson_distribution<double> distribution(lambda);  // lambda is 0.127551, 6.37755, 25
+    static std::poisson_distribution<long unsigned int> distribution(lambda);  // lambda is 0.127551, 6.37755, 25
     return BlockValue(distribution(generator));
 }
 
