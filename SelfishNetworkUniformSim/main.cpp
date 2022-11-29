@@ -56,10 +56,13 @@
 #define SATOSHI_VALUE 0.00000001 // value of a single satoshi in terms of bitcoin 
 
 // 
-BlockTime GetUniformRandomNetworkDelay(){
+BlockTime GetUniformRandomNetworkDelay(bool returnZero){
+    if (returnZero){
+        return BlockTime(0);
+    }
     static std::random_device rd;  // Will be used to obtain a seed for the random number engine
     static std::mt19937 gen(rd()); // Standard mersenne_twister_engine seeded with rd()
-    static std::uniform_real_distribution<double> dis(0, 10.0); // seconds
+    static std::uniform_real_distribution<double> dis(1, 11.0); // seconds
     return BlockTime(dis(gen));
 }
 
@@ -79,14 +82,17 @@ BlockValue GetLinearCostOfMining(int game_number) {
 
 int main(int, const char * argv[]) {
     
-    int numberOfGames = NUM_GAMES;
-    
+    int numberOfGames = atoi(argv[1]);
+    int percentageAlpha = atoi(argv[2]);
+    int returnZero = atoi(argv[3]);
+    char  filename[1024] = {0};
+    sprintf(filename, "%s_%s_%s_%s.txt", argv[0], argv[1], argv[2], argv[3])
     //#########################################################################################
     //idea of simulation: 2 miners, only an honest, and a selfish miner. Run many games, with the
     //size of the two changing. Plot the expected profit vs. actual profit. (reproduce fig 2 in selfish paper)
     GAMEINFO("#####\nRunning Selfish Mining Simulation\n#####" << std::endl);
     std::ofstream plot;
-    plot.open("selfishMiningPlot2.txt");
+    plot.open(filename);
     
     plot << "Selfish Miner Profit, Selfish Miner Network Delay, Honest Miner Network Delay" << std::endl;
     //start running games
@@ -94,7 +100,7 @@ int main(int, const char * argv[]) {
         
         std::vector<std::unique_ptr<Miner>> miners;
         
-        HashRate selfishPower = HashRate(.33); // fixed alpha
+        HashRate selfishPower = HashRate(percentageAlpha/100.0); // fixed alpha
         
 //        auto defaultStrat = createDefaultSelfishStrategy(NOISE_IN_TRANSACTIONS, SELFISH_GAMMA);
 //        auto selfishStrat = createSelfishStrategy(NOISE_IN_TRANSACTIONS);
@@ -109,8 +115,10 @@ int main(int, const char * argv[]) {
         auto selfishStrat = createSelfishStrategy(NOISE_IN_TRANSACTIONS);
 
         // Network delay is randomly sampled for each round of the simulation
-        auto selfishMinerNetworkDelay = GetUniformRandomNetworkDelay();
-        auto honestMinerNetworkDelay = GetUniformRandomNetworkDelay();
+        auto selfishMinerNetworkDelay = GetUniformRandomNetworkDelay(returnZero);
+        auto honestMinerNetworkDelay = GetUniformRandomNetworkDelay(returnZero);
+
+        std::cout << "Honest: " <<  honestMinerNetworkDelay <<", selfish: " << selfishMinerNetworkDelay << std::endl;
         MinerParameters selfishMinerParams = {0, std::to_string(0), selfishPower, selfishMinerNetworkDelay, COST_PER_SEC_TO_MINE};
         MinerParameters defaultMinerParams = {1, std::to_string(1), HashRate(1.0) - selfishPower, honestMinerNetworkDelay, COST_PER_SEC_TO_MINE};
         
