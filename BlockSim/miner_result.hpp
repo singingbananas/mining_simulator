@@ -16,9 +16,10 @@ class Block;
 struct MinerResult {
     BlockCount blocksInWinningChain;
     Value totalProfit;
+    Value totalCost;
     
     MinerResult();
-    void addBlock(const Block *block);
+    void addBlock(const Block *block, Value tc);
 };
 
 #endif /* miner_result_hpp */

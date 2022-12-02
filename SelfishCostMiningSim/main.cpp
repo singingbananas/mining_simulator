@@ -63,12 +63,6 @@ BlockTime GetUniformRandomNetworkDelay(){
     return BlockTime(dis(gen));
 }
 
-BlockTime GetPoissonNetworkDelay(){
-    static std::default_random_engine generator;
-    static std::poisson_distribution<double> distribution(0.89); 
-    return BlockTime(distribution(generator));
-}
-
 BlockTime GetLinearNetworkDelay(int game_number) {
     return HONEST_NETWORK_DELAY + BlockTime(game_number * .001); // linearly increase by .001 seconds
 }
@@ -77,34 +71,33 @@ BlockTime GetExponentialNetworkDelay(int game_number){
     return HONEST_NETWORK_DELAY + BlockTime(pow(10, game_number - NUM_GAMES/2)); // make this make sense ! grows too fast.. how to slow down?
 }
 
-BlockValue GetPoissonBlockValue(int lambda){ 
-    static std::default_random_engine generator;
-    static std::poisson_distribution<double> distribution(lambda);  // lambda is 0.127551, 6.37755, 25
-    return BlockValue(distribution(generator));
-}
 
 BlockValue GetLinearCostOfMining(int game_number) {
-    return COST_PER_SEC_TO_MINE + BlockValue(game_number * SATOSHI_VALUE * 100);  
+    return COST_PER_SEC_TO_MINE + BlockValue(pow(1.1, game_number));  
 }
 
 int main(int, const char * argv[]) {
     
-    int numberOfGames = NUM_GAMES;
+    int numberOfGames = atoi(argv[1]);
+    int percentageAlpha = atoi(argv[2]);
+    char  filename[1024] = {0};
+    sprintf(filename, "%s_%s_%s.txt", argv[0], argv[1], argv[2]);
     
     //#########################################################################################
     //idea of simulation: 2 miners, only an honest, and a selfish miner. Run many games, with the
     //size of the two changing. Plot the expected profit vs. actual profit. (reproduce fig 2 in selfish paper)
     GAMEINFO("#####\nRunning Selfish Mining Simulation\n#####" << std::endl);
     std::ofstream plot;
-    plot.open("selfishMiningPlot2.txt");
+    plot.open(filename);
     
+    plot << "Selfish Miner Profit, Selfish Miner Cost" << std::endl;
     //start running games
     for (int gameNum = 1; gameNum <= numberOfGames; gameNum++) {
         
         std::vector<std::unique_ptr<Miner>> miners;
         
         // Scale power to reach %50 on the last game
-        HashRate selfishPower = HashRate(.5*(1.0 / numberOfGames) * gameNum);
+        HashRate selfishPower = HashRate(percentageAlpha/100.0);
 //        auto defaultStrat = createDefaultSelfishStrategy(NOISE_IN_TRANSACTIONS, SELFISH_GAMMA);
 //        auto selfishStrat = createSelfishStrategy(NOISE_IN_TRANSACTIONS);
         
@@ -116,7 +109,8 @@ int main(int, const char * argv[]) {
 //        auto defaultStrat = createPettyStrategy(NOISE_IN_TRANSACTIONS, SELFISH_GAMMA);
         auto defaultStrat = createDefaultSelfishStrategy(NOISE_IN_TRANSACTIONS, SELFISH_GAMMA);
         auto selfishStrat = createSelfishStrategy(NOISE_IN_TRANSACTIONS);
-        MinerParameters selfishMinerParams = {0, std::to_string(0), selfishPower, NETWORK_DELAY, COST_PER_SEC_TO_MINE};
+        auto miningCost = GetLinearCostOfMining(gameNum);
+        MinerParameters selfishMinerParams = {0, std::to_string(0), selfishPower, NETWORK_DELAY, miningCost};
         MinerParameters defaultinerParams = {1, std::to_string(1), HashRate(1.0) - selfishPower, NETWORK_DELAY, COST_PER_SEC_TO_MINE};
         
         miners.push_back(std::make_unique<Miner>(selfishMinerParams, *selfishStrat));
@@ -146,11 +140,16 @@ int main(int, const char * argv[]) {
         GAMEINFO("Total profit:" << result.moneyInLongestChain << std::endl);
         
         assert(minerResults[0].totalProfit <= result.moneyInLongestChain);
-        
-        auto fractionOfProfits = valuePercentage(minerResults[0].totalProfit, result.moneyInLongestChain);
+        fprintf(stdout, "Game: %d cost: %llu miner profit= %llu, miner cost= %llu %f\n",gameNum, miningCost, minerResults[0].totalProfit, minerGroup.miners[0]->totalMiningCost, minerResults[0].totalCost * 1.0/ minerResults[0].totalProfit);
+        fflush(stdout);
+        long realProfit = (long) (minerResults[0].totalProfit - minerResults[0].totalCost);
+        auto fractionOfProfits =  realProfit * (1.0) / result.moneyInLongestChain
         GAMEINFO("Fraction earned by selfish:" << fractionOfProfits << " with " << selfishPower << " fraction of hash power" << std::endl);
         // plot << selfishPower << " " << fractionOfProfits << std::endl;
-        plot << selfishNetworkDelay << " " << fractionOfProfits << std::endl;
+        plot <<  fractionOfProfits << ", " << miningCost << std::endl;
+        if(minerResults[0].totalCost * 1.0/ minerResults[0].totalProfit > 1.0){
+            return 0;
+        }
         
     }
     

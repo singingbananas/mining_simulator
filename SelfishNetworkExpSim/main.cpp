@@ -89,7 +89,7 @@ int main(int, const char * argv[]) {
     GAMEINFO("#####\nRunning Selfish Mining Simulation\n#####" << std::endl);
     std::ofstream plot;
     plot.open(filename);
-    plot << "Selfish Miner Profit, Selfish Miner Network Delay, Honest Miner Network Delay" << std::endl;
+    plot << "Selfish Miner Profit, Selfish Miner Cost" << std::endl;
 
     //start running games
     for (int gameNum = 1; gameNum <= numberOfGames; gameNum++) {

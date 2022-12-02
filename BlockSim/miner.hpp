@@ -25,7 +25,6 @@ private:
     std::vector<std::unique_ptr<Block>> unbroadcastBlocks;
     std::reference_wrapper<const Strategy> strategy;
     
-    Value totalMiningCost;
     BlockTime _lastCostUpdate;
     BlockTime _nextMiningTime;
     BlockTime _nextPublishTime;
@@ -38,6 +37,7 @@ protected:
     virtual void print(std::ostream& where) const;
 public:
     const MinerParameters params;
+    Value totalMiningCost;
     
     Miner(MinerParameters parameters, const Strategy &strategy);
     virtual ~Miner();

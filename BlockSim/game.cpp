@@ -81,8 +81,8 @@ GameResult runGame(MinerGroup &minerGroup, Blockchain &blockchain, GameSettings 
                 break;
             }
         }
-        
-        minerResults[minerIndex].addBlock(mined);
+
+        minerResults[minerIndex].addBlock(mined, minerGroup.miners[minerIndex]->totalMiningCost);
         totalValue += mined->value;
     }
     

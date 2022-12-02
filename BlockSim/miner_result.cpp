@@ -12,7 +12,8 @@
 
 MinerResult::MinerResult() : blocksInWinningChain(BlockCount(0)), totalProfit(Value(0)) {}
 
-void MinerResult::addBlock(const Block *block) {
+void MinerResult::addBlock(const Block *block, Value tc) {
     totalProfit += block->value;
+    totalCost = tc;
     blocksInWinningChain++;
 }
