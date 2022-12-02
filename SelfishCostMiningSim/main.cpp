@@ -90,7 +90,7 @@ int main(int, const char * argv[]) {
     std::ofstream plot;
     plot.open(filename);
     
-    plot << "Selfish Miner Profit, Selfish Miner Cost" << std::endl;
+    plot << "Selfish Miner Profit, Selfish Miner Cost/Sec, Selfish Miner Avg Cost Per Block" << std::endl;
     //start running games
     for (int gameNum = 1; gameNum <= numberOfGames; gameNum++) {
         
@@ -146,7 +146,7 @@ int main(int, const char * argv[]) {
         auto fractionOfProfits =  realProfit * (1.0) / result.moneyInLongestChain
         GAMEINFO("Fraction earned by selfish:" << fractionOfProfits << " with " << selfishPower << " fraction of hash power" << std::endl);
         // plot << selfishPower << " " << fractionOfProfits << std::endl;
-        plot <<  fractionOfProfits << ", " << miningCost << std::endl;
+        plot <<  fractionOfProfits << ", " << miningCost << ", " << minerResults[0].totalCost/20000.0 << std::endl;
         if(minerResults[0].totalCost * 1.0/ minerResults[0].totalProfit > 1.0){
             return 0;
         }
