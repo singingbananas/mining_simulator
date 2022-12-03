@@ -45,7 +45,7 @@
 #define SEC_PER_BLOCK BlockRate(600)     //mean time in seconds to find a block
 
 //#define B BlockValue(3.125) // Block reward
-#define A (TOTAL_BLOCK_VALUE - B)/SEC_PER_BLOCK  //rate transactions come in
+#define A(x) (x - B)/SEC_PER_BLOCK  //rate transactions come in
 
 #define SELFISH_GAMMA 0.5 //fraction of network favoring your side in a dead tie between honest and selfish blocks. treat it as a coin toss.
 //half way and miners have equal hash power
@@ -63,12 +63,6 @@ BlockTime GetUniformRandomNetworkDelay(){
     return BlockTime(dis(gen));
 }
 
-BlockTime GetPoissonNetworkDelay(){
-    static std::default_random_engine generator;
-    static std::poisson_distribution<double> distribution(0.89); 
-    return BlockTime(distribution(generator));
-}
-
 BlockTime GetLinearNetworkDelay(int game_number) {
     return HONEST_NETWORK_DELAY + BlockTime(game_number * .001); // linearly increase by .001 seconds
 }
@@ -77,9 +71,9 @@ BlockTime GetExponentialNetworkDelay(int game_number){
     return HONEST_NETWORK_DELAY + BlockTime(pow(10, game_number - NUM_GAMES/2)); // make this make sense ! grows too fast.. how to slow down?
 }
 
-BlockValue GetPoissonBlockValue(int lambda){ 
+BlockValue GetPoissonBlockValue(double lambda){ 
     static std::default_random_engine generator;
-    static std::poisson_distribution<double> distribution(lambda);  // lambda is 0.127551, 6.37755, 25
+    static std::poisson_distribution<long> distribution(lambda * SATOSHI_PER_BITCOIN);  // lambda is 0.127551, 6.37755, 25
     return BlockValue(distribution(generator));
 }
 
@@ -89,22 +83,26 @@ BlockValue GetLinearCostOfMining(int game_number) {
 
 int main(int, const char * argv[]) {
     
-    int numberOfGames = NUM_GAMES;
+    int numberOfGames = atoi(argv[1]);
+    int percentageAlpha = atoi(argv[2]);
+    double lambda = atoi(argv[3]) / 1000000.0;
+    char  filename[1024] = {0};
+    sprintf(filename, "%s_%s_%s_%s.txt", argv[0], argv[1], argv[2], argv[3]);
     
     //#########################################################################################
     //idea of simulation: 2 miners, only an honest, and a selfish miner. Run many games, with the
     //size of the two changing. Plot the expected profit vs. actual profit. (reproduce fig 2 in selfish paper)
     GAMEINFO("#####\nRunning Selfish Mining Simulation\n#####" << std::endl);
     std::ofstream plot;
-    plot.open("selfishMiningPlot2.txt");
-    
+    plot.open(filename);
+    plot << "Selfish Miner Profit, Block Vakue" << std::endl;
     //start running games
     for (int gameNum = 1; gameNum <= numberOfGames; gameNum++) {
         
         std::vector<std::unique_ptr<Miner>> miners;
         
         // Scale power to reach %50 on the last game
-        HashRate selfishPower = HashRate(.5*(1.0 / numberOfGames) * gameNum);
+        HashRate selfishPower = HashRate(percentageAlpha/100.0);
 //        auto defaultStrat = createDefaultSelfishStrategy(NOISE_IN_TRANSACTIONS, SELFISH_GAMMA);
 //        auto selfishStrat = createSelfishStrategy(NOISE_IN_TRANSACTIONS);
         
@@ -127,7 +125,8 @@ int main(int, const char * argv[]) {
         GAMEINFO("\n\nGame#: " << gameNum << " The board is set, the pieces are in motion..." << std::endl);
         GAMEINFO("miner ratio:" << selfishPower << " selfish." << std::endl);
         
-        BlockchainSettings blockchainSettings = {SEC_PER_BLOCK, A, B, EXPECTED_NUMBER_OF_BLOCKS};
+        auto blockValue = GetPoissonBlockValue(lambda);
+        BlockchainSettings blockchainSettings = {SEC_PER_BLOCK, A(blockValue), B, EXPECTED_NUMBER_OF_BLOCKS};
         GameSettings settings = {blockchainSettings};
         
         
@@ -150,7 +149,7 @@ int main(int, const char * argv[]) {
         auto fractionOfProfits = valuePercentage(minerResults[0].totalProfit, result.moneyInLongestChain);
         GAMEINFO("Fraction earned by selfish:" << fractionOfProfits << " with " << selfishPower << " fraction of hash power" << std::endl);
         // plot << selfishPower << " " << fractionOfProfits << std::endl;
-        plot << selfishNetworkDelay << " " << fractionOfProfits << std::endl;
+        plot <<  fractionOfProfits <<", "<< blockValue << std::endl;
         
     }
     
