@@ -50,7 +50,7 @@ Block &blockToMineOn(const Miner &me, const Blockchain &chain, double gamma) {
             selfishBlock = possiblities[0];
         }
         
-        assert(ownBlock(&me, defaultBlock));
+        //assert(ownBlock(&me, defaultBlock));
         
         //with chance gamma, mine on the selfish miner's block, otherwise not
         if (selectRandomChance() < gamma) {

@@ -41,6 +41,9 @@ selfish-npoiss: SelfishNetworkPoissonSim/main.cpp $(OBJS)
 selfish-nuni: SelfishNetworkUniformSim/main.cpp $(OBJS)
 	$(CPP) $(CPPFLAGS)  $(INC) $(IGSL) $(IBLAS)  -o $@ $^ $(LBLAS) $(LGSL)
 
+selfish-comp: SelfishClassicClever/main.cpp $(OBJS)
+	$(CPP) $(CPPFLAGS)  $(INC) $(IGSL) $(IBLAS)  -o $@ $^ $(LBLAS) $(LGSL)
+
 selfish: SelfishSim/main.cpp $(OBJS)
 	$(CPP) $(CPPFLAGS)  $(INC) $(IGSL) $(IBLAS)  -o $@ $^ $(LBLAS) $(LGSL)
 
