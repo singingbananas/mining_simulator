@@ -61,13 +61,13 @@ plot-nexp:
 	python3 plot.py "Profitability of Selfish Mining in Presence of Exponential Network Delay" "Selfish Network Delay (sec)" selfish-nexp_25_12.txt  selfish-nexp_25_25.txt selfish-nexp_25_38.txt selfish-nexp_25_40.txt selfish-nexp_25_50.txt    
 
 plot-cm: 
-	python3 plot.py "Profitability of Selfish Mining in Presence of Mining Cost" "Mining Cost (satoshis)" selfish-cm_500_12.txt  selfish-cm_500_25.txt selfish-cm_500_38.txt selfish-cm_500_40.txt selfish-cm_500_50.txt    
+	python3 plot.py "Profitability of Selfish Mining in Presence of Mining Cost per Sec" "Mining Cost/Sec (BTC)" selfish-cm_500_12.txt  selfish-cm_500_25.txt selfish-cm_500_38.txt selfish-cm_500_40.txt selfish-cm_500_50.txt    
 
 plot-bv:
-	python3 plot.py "Profitability of Selfish Mining vs. Block Value" "block value (btc)" selfish-bv_500_12_${BV}.txt  selfish-bv_500_25_${BV}.txt selfish-bv_500_38_${BV}.txt selfish-bv_500_40_${BV}.txt selfish-bv_500_50_${BV}.txt
+	python3 plot.py "Profitability of Selfish Mining vs. Block Value" "Block Value (BTC)" selfish-bv_500_12_${BV}.txt  selfish-bv_500_25_${BV}.txt selfish-bv_500_38_${BV}.txt selfish-bv_500_40_${BV}.txt selfish-bv_500_50_${BV}.txt
 
 plot-comp:
-	python3 plot.py "Profitability of (Classic vs. Clever) Selfish Mining vs. Share of Hash Power for γ=0.${GAMMA}" "Hashpower %" selfish-comp_${GAMMA}.txt
+	python3 plot.py "Profitability of Classic and Clever Selfish Miner vs. Respective Share of Hash Power for γ=0.${GAMMA}" "Classic Hash Power α %" selfish-comp_${GAMMA}.txt
 
 %.o: %.cpp
 	$(CPP) $(CPPFLAGS) $(INC) $(IGSL) $(IBLAS) $(LGSL) $(LBLAS) $(LDLIBS) -o $@ -c $<

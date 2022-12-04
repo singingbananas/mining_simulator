@@ -66,7 +66,7 @@ def plot_block_value_data(graph_title, x_label, y_label, data_dict): # we have o
     for filename, value in data_dict.items(): # plot a line for each file in the data_dict. we may want to plot multiple lines ...
         components = filename.split("_")
         p.circle([x/100000000 for x in value[1]], [x*100 for x in value[0]], line_width=2, legend_label=f"α={components[2]}, λ={int(components[3].replace('.txt', ''))/1000000}" , color=colours[components[2]]) # note that value[0] = y values and value[1] = x values 
-
+        # recall that lambda here = mean of poisson distribution for block value (lambda could be 0.127551, 6.37755, 25)
     show(p)
     export_png(p, filename=f"graphs/{graph_title}.png")
 
@@ -75,7 +75,7 @@ def plot_cost_data(graph_title, x_label, y_label, data_dict):
     p = figure(title=graph_title, x_axis_label=x_label, y_axis_label=y_label)   
     for filename, value in data_dict.items(): # plot a line for each file in the data_dict. we may want to plot multiple lines ...
         components = filename.split("_")
-        p.line(value[1], [x*100 for x in value[0]], line_width=2, legend_label=f"α={components[2].replace('.txt', '')}%", color=colours[components[2].replace(".txt", "")]) # we are plotting cost/sec agaisnt profitability. (we are ignoring the x_2 values!)
+        p.line([x/100000000 for x in value[1]], [x*100 for x in value[0]], line_width=2, legend_label=f"α={components[2].replace('.txt', '')}%", color=colours[components[2].replace(".txt", "")]) # we are plotting cost/sec agaisnt profitability. (we are ignoring the x_2 values!)
 
     show(p)
     export_png(p, filename=f"graphs/{graph_title}.png")
@@ -85,7 +85,7 @@ def plot_classic_vs_clever(graph_title, x_label, y_label, data_dict):
     values = list(data_dict.values())[0] # extract [Classic Selfish Miner Profit, Classic Selfish Miner Alpha, Clever Selfish Miner Profit, Clever Selfish Miner Alpha] and put it into list 
     classic_ys, classic_xs, clever_ys, clever_xs = tuple(values) # convert that list into a tuple and unpack the tuple 
     p.line(list(map (lambda x: 100*x,classic_xs)), list(map (lambda x: 100*x,classic_ys)), legend_label="classic selfish miner" , color="red") # plot a line for classic selfish miner 
-    p.line(list(map (lambda x: 100*x,clever_xs)), list(map (lambda x: 100*x,clever_ys)), legend_label="clever selfish miner" , color="blue") # plot a line for clever selfish miner 
+    p.line(list(map (lambda x: 50-100*x,clever_xs)), list(map (lambda x: 100*x,clever_ys)), legend_label="clever selfish miner" , color="blue") # plot a line for clever selfish miner 
     show(p)
     export_png(p, filename=f"graphs/{graph_title}.png")
 
