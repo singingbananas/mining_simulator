@@ -67,7 +67,7 @@ plot-bv:
 	python3 plot.py "Profitability of Selfish Mining vs. Block Value" "Block Value (BTC)" selfish-bv_500_12_${BV}.txt  selfish-bv_500_25_${BV}.txt selfish-bv_500_38_${BV}.txt selfish-bv_500_40_${BV}.txt selfish-bv_500_50_${BV}.txt
 
 plot-comp:
-	python3 plot.py "Profitability of Classic and Clever Selfish Miner vs. Respective Share of Hash Power for γ=0.${GAMMA}" "Classic Hash Power α %" selfish-comp_${GAMMA}.txt
+	python3 plot.py "Profitability of Mining vs. Share of Classic Selfish α for γ=${GAMMA}%" "Classic Hash Power α %" selfish-comp_${GAMMA}.txt
 
 %.o: %.cpp
 	$(CPP) $(CPPFLAGS) $(INC) $(IGSL) $(IBLAS) $(LGSL) $(LBLAS) $(LDLIBS) -o $@ -c $<

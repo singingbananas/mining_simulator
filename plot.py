@@ -12,7 +12,8 @@ def file_read(file1):
         x_1 = [] # selfish miner data  
         x_2 = [] # honest miner data 
         x_3 = [] 
-        variables = [y, x_1, x_2, x_3] # list of lists 
+        x_4 = []
+        variables = [y, x_1, x_2, x_3, x_4] # list of lists 
         reader = csv.DictReader(f1)
         columns = len(reader.fieldnames)
         for row in reader:
@@ -24,7 +25,7 @@ def file_read(file1):
     elif not x_3: 
         return file1, [y, x_1, x_2] # we obtained both x_1 and x_2 values
     else:
-        return file1, [y, x_1, x_2, x_3]
+        return file1, [y, x_1, x_2, x_3, x_4]
 
 # Uniform and Poisson Network Delay Data --> plot ratio of selfish to honest network delay
 def plot_uni_poiss_network_data(graph_title, x_label, y_label, data_dict): 
@@ -83,9 +84,10 @@ def plot_cost_data(graph_title, x_label, y_label, data_dict):
 def plot_classic_vs_clever(graph_title, x_label, y_label, data_dict):    
     p = figure(title=graph_title, x_axis_label=x_label, y_axis_label=y_label)   
     values = list(data_dict.values())[0] # extract [Classic Selfish Miner Profit, Classic Selfish Miner Alpha, Clever Selfish Miner Profit, Clever Selfish Miner Alpha] and put it into list 
-    classic_ys, classic_xs, clever_ys, clever_xs = tuple(values) # convert that list into a tuple and unpack the tuple 
-    p.line(list(map (lambda x: 100*x,classic_xs)), list(map (lambda x: 100*x,classic_ys)), legend_label="classic selfish miner" , color="red") # plot a line for classic selfish miner 
-    p.line(list(map (lambda x: 50-100*x,clever_xs)), list(map (lambda x: 100*x,clever_ys)), legend_label="clever selfish miner" , color="blue") # plot a line for clever selfish miner 
+    classic_ys, classic_xs, clever_ys, clever_xs, honest_ys = tuple(values) # convert that list into a tuple and unpack the tuple 
+    p.line(list(map (lambda x: 100*x,classic_xs)), list(map (lambda x: 100*x,classic_ys)), legend_label="classic selfish miner" , color="red") # plot a line for classic selfish miner: CLASSIC alpha vs CLASSIC profit
+    p.line(list(map (lambda x: 50-100*x,clever_xs)), list(map (lambda x: 100*x,clever_ys)), legend_label="clever selfish miner" , color="blue") # plot a line for clever selfish miner: CLEVER alpha vs CLEVER profit
+    p.line(list(map (lambda x: 100*x,classic_xs)), list(map (lambda x: 100*x,honest_ys)), legend_label="honest miner" , color="green") # plot a line for honest miner: CLASSIC alpha vs HONEST profit
     show(p)
     export_png(p, filename=f"graphs/{graph_title}.png")
 
