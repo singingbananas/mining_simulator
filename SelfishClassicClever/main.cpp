@@ -64,7 +64,7 @@ int main(int, const char *argv []) {
     char  filename[1024] = {0};
     sprintf(filename, "%s_%s.txt", argv[0], argv[1]);
     plot.open(filename);
-    plot << "Classic Selfish Miner Profit, Classic Selfish Miner Alpha, Clever Selfish Miner Profit, Clever Selfish Miner Alpha" << std::endl;
+    plot << "Classic Selfish Miner Profit, Classic Selfish Miner Alpha, Clever Selfish Miner Profit, Clever Selfish Miner Alpha, honest Profitability"<< std::endl;
     //start running games
     for (int gameNum = 0; gameNum <= numberOfGames; gameNum++) {
         
@@ -123,8 +123,11 @@ int main(int, const char *argv []) {
         
         auto fractionOfProfits = valuePercentage(minerResults[0].totalProfit, result.moneyInLongestChain);
         auto cleverFractionOfProfits = valuePercentage(minerResults[1].totalProfit, result.moneyInLongestChain);
+        auto honestFractionOfProfits = valuePercentage(minerResults[2].totalProfit, result.moneyInLongestChain);
+        printf("Honest %f, Classic, %f, Clever %f, Total %f \n"
+                , honestFractionOfProfits, fractionOfProfits, cleverFractionOfProfits, honestFractionOfProfits + fractionOfProfits + cleverFractionOfProfits);
         GAMEINFO("Fraction earned by selfish:" << fractionOfProfits << " with " << selfishPower << " fraction of hash power" << std::endl);
-        plot << fractionOfProfits<< ", " << selfishPower << ", " << cleverFractionOfProfits << ", " << cleverPower << std::endl;
+        plot << fractionOfProfits<< ", " << selfishPower << ", " << cleverFractionOfProfits << ", " << cleverPower << "," << honestFractionOfProfits << std::endl;
         
     }
     

@@ -32,6 +32,7 @@
 
 
 #define NOISE_IN_TRANSACTIONS false //miners don't put the max value they can into a block (simulate tx latency)
+
 #define NETWORK_DELAY BlockTime(0)         //network delay in seconds for network to hear about your block
 #define EXPECTED_NUMBER_OF_BLOCKS BlockCount(20000)
 
@@ -47,57 +48,23 @@
 //#define B BlockValue(3.125) // Block reward
 #define A (TOTAL_BLOCK_VALUE - B)/SEC_PER_BLOCK  //rate transactions come in
 
-#define SELFISH_GAMMA 0.5 //fraction of network favoring your side in a dead tie between honest and selfish blocks. treat it as a coin toss.
+#define SELFISH_GAMMA 0.0 //fraction of network favoring your side in a dead tie
 //half way and miners have equal hash power
 
-#define HONEST_NETWORK_DELAY BlockTime(0)  // can be changed per each simulation 
-#define SELFISH_NETWORK_DELAY BlockTime(0) // can be changed per each simulation 
-#define NUM_GAMES 25
-#define SATOSHI_VALUE 0.00000001 // value of a single satoshi in terms of bitcoin 
-
-// 
-BlockTime GetUniformRandomNetworkDelay(){
-    static std::random_device rd;  // Will be used to obtain a seed for the random number engine
-    static std::mt19937 gen(rd()); // Standard mersenne_twister_engine seeded with rd()
-    static std::uniform_real_distribution<double> dis(0, 10.0); // 
-    return BlockTime(dis(gen));
-}
-
-BlockTime GetPoissonNetworkDelay(){
-    static std::default_random_engine generator;
-    static std::poisson_distribution<long unsigned int> distribution(1); 
-    return BlockTime(distribution(generator));
-}
-
-BlockTime GetLinearNetworkDelay(int game_number) {
-    return HONEST_NETWORK_DELAY + BlockTime(game_number * .001); // linearly increase by .001 seconds
-}
-
-BlockTime GetExponentialNetworkDelay(int game_number){
-    return HONEST_NETWORK_DELAY + BlockTime(pow(10, game_number - NUM_GAMES/2)); // make this make sense ! grows too fast.. how to slow down?
-}
-
-BlockValue GetPoissonBlockValue(int lambda){ 
-    static std::default_random_engine generator;
-    static std::poisson_distribution<long unsigned int> distribution(lambda);  // lambda is 0.127551, 6.37755, 25
-    return BlockValue(distribution(generator));
-}
-
-BlockValue GetLinearCostOfMining(int game_number) {
-    return COST_PER_SEC_TO_MINE + BlockValue(game_number * SATOSHI_VALUE * 100);  
-}
-
-int main(int, const char * argv[]) {
+int main(int, const char * []) {
     
-    int numberOfGames = NUM_GAMES;
+    int numberOfGames = 25;
     
     //#########################################################################################
     //idea of simulation: 2 miners, only an honest, and a selfish miner. Run many games, with the
     //size of the two changing. Plot the expected profit vs. actual profit. (reproduce fig 2 in selfish paper)
     GAMEINFO("#####\nRunning Selfish Mining Simulation\n#####" << std::endl);
     std::ofstream plot;
-    plot.open("selfishMiningPlot2.txt");
-    
+    int percentageGamma = atoi(argv[1]);
+    char  filename[1024] = {0};
+    sprintf(filename, "%s_%s.txt", argv[0], argv[1]);
+    plot.open();
+    plot << "Classic Selfish Miner Profit, Classic Selfish Miner Alpha, Clever Selfish Miner Profit, Clever Selfish Miner Alpha" << std::endl;
     //start running games
     for (int gameNum = 1; gameNum <= numberOfGames; gameNum++) {
         
@@ -105,6 +72,7 @@ int main(int, const char * argv[]) {
         
         // Scale power to reach %50 on the last game
         HashRate selfishPower = HashRate(.5*(1.0 / numberOfGames) * gameNum);
+        HashRate cleverPower = HashRate(.5) - selfishPower;
 //        auto defaultStrat = createDefaultSelfishStrategy(NOISE_IN_TRANSACTIONS, SELFISH_GAMMA);
 //        auto selfishStrat = createSelfishStrategy(NOISE_IN_TRANSACTIONS);
         
@@ -112,14 +80,19 @@ int main(int, const char * argv[]) {
         using std::placeholders::_2;
         
         std::function<Value(const Blockchain &, Value)> forkFunc(std::bind(functionForkPercentage, _1, _2, 2));
-//        auto selfishStrat = createCleverSelfishStrategy(false, Value(25)*SATOSHI_PER_BITCOIN);
+
 //        auto defaultStrat = createPettyStrategy(NOISE_IN_TRANSACTIONS, SELFISH_GAMMA);
         auto defaultStrat = createDefaultSelfishStrategy(NOISE_IN_TRANSACTIONS, SELFISH_GAMMA);
+        auto cleverStrat = createCleverSelfishStrategy(false, Value(25)*SATOSHI_PER_BITCOIN);
         auto selfishStrat = createSelfishStrategy(NOISE_IN_TRANSACTIONS);
+
         MinerParameters selfishMinerParams = {0, std::to_string(0), selfishPower, NETWORK_DELAY, COST_PER_SEC_TO_MINE};
-        MinerParameters defaultinerParams = {1, std::to_string(1), HashRate(1.0) - selfishPower, NETWORK_DELAY, COST_PER_SEC_TO_MINE};
+        MinerParameters cleverMinerParams = {1, std::to_string(1), cleverPower, NETWORK_DELAY, COST_PER_SEC_TO_MINE};
+        MinerParameters defaultinerParams = {2, std::to_string(2), HashRate(.5), NETWORK_DELAY, COST_PER_SEC_TO_MINE};
+
         
         miners.push_back(std::make_unique<Miner>(selfishMinerParams, *selfishStrat));
+        miners.push_back(std::make_unique<Miner>(cleverMinerParams, *cleverStrat));
         miners.push_back(std::make_unique<Miner>(defaultinerParams, *defaultStrat));
         
         MinerGroup minerGroup(std::move(miners));
@@ -148,8 +121,9 @@ int main(int, const char * argv[]) {
         assert(minerResults[0].totalProfit <= result.moneyInLongestChain);
         
         auto fractionOfProfits = valuePercentage(minerResults[0].totalProfit, result.moneyInLongestChain);
+        auto cleverFractionOfProfits = valuePercentage(minerResults[1].totalProfit, result.moneyInLongestChain);
         GAMEINFO("Fraction earned by selfish:" << fractionOfProfits << " with " << selfishPower << " fraction of hash power" << std::endl);
-        plot << selfishPower << " " << fractionOfProfits << std::endl;
+        plot << fractionOfProfits<< ", " << selfishPower << ", " << cleverFractionOfProfits << ", " << cleverPower << std::endl;
         
     }
     
