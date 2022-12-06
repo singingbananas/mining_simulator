@@ -64,7 +64,7 @@ plot-cm:
 	python3 plot.py "Profitability of Selfish Mining in Presence of Mining Cost per Sec" "Mining Cost/Sec (BTC)" selfish-cm_500_12.txt  selfish-cm_500_25.txt selfish-cm_500_38.txt selfish-cm_500_40.txt selfish-cm_500_50.txt    
 
 plot-bv:
-	python3 plot.py "Profitability of Selfish Mining vs. Block Value" "Block Value (BTC)" selfish-bv_500_12_${BV}.txt  selfish-bv_500_25_${BV}.txt selfish-bv_500_38_${BV}.txt selfish-bv_500_40_${BV}.txt selfish-bv_500_50_${BV}.txt
+	python3 plot.py "Profitability of Selfish Mining vs. Block Value with λ=$(shell awk 'BEGIN{print ${BV}/1000000}' )" "Block Value (BTC)" selfish-bv_500_12_${BV}.txt  selfish-bv_500_25_${BV}.txt selfish-bv_500_38_${BV}.txt selfish-bv_500_40_${BV}.txt selfish-bv_500_50_${BV}.txt
 
 plot-comp:
 	python3 plot.py "Profitability of Mining vs. Share of Classic Selfish α for γ=${GAMMA}%" "Classic Hash Power α %" selfish-comp_${GAMMA}.txt
