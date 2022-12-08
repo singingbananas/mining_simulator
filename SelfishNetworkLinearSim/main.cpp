@@ -65,7 +65,7 @@ BlockTime GetUniformRandomNetworkDelay(){
 
 
 BlockTime GetLinearNetworkDelay(int game_number) {
-    return HONEST_NETWORK_DELAY + BlockTime(game_number * 1); // linearly increase by .001 seconds
+    return HONEST_NETWORK_DELAY + BlockTime(game_number * 1); // linearly increase by 1 second
 }
 
 BlockTime GetExponentialNetworkDelay(int game_number){
