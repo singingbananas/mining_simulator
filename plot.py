@@ -5,6 +5,8 @@ import sys
 
 colours= {"12": "red", "25" : "brown", "38" : "green" , "40" : "blue", "50" : "purple" , "baseline": "black"}
 colours_2 = {"127551": "red", "6377550": "green", "25000000" : "purple"}
+FONT = 'times' # change back to 'helvetica' for the original font 
+SIZE = '10pt'
 
 def file_read(file1):
     with open(file1, newline='') as f1:
@@ -30,6 +32,16 @@ def file_read(file1):
 # Uniform and Poisson Network Delay Data --> plot ratio of selfish to honest network delay
 def plot_uni_poiss_network_data(graph_title, x_label, y_label, data_dict): 
     p = figure(title=graph_title, x_axis_label=x_label, y_axis_label=y_label)
+    p.title.text_font = FONT
+    p.title.text_font_size = SIZE
+    p.yaxis.axis_label_text_font = FONT
+    p.yaxis.axis_label_text_font_size = SIZE
+    p.xaxis.axis_label_text_font = FONT
+    p.xaxis.axis_label_text_font_size = SIZE
+    p.xaxis.major_label_text_font = FONT
+    p.xaxis.major_label_text_font_size = SIZE
+    p.yaxis.major_label_text_font = FONT
+    p.yaxis.major_label_text_font_size = SIZE
     for filename, value in data_dict.items(): # plot a line for each file in the data_dict. we may want to plot multiple lines ...
         components = filename.split("_")
         if len(value) == 3: # if we are plotting a ratio of selfish to honest data aka we have x_1 AND x_2 values
@@ -40,6 +52,8 @@ def plot_uni_poiss_network_data(graph_title, x_label, y_label, data_dict):
 
             plot([i-j for i,j in zip(value[1], value[2])], [x*100 for x in value[0]], line_width= 1, legend_label=f"α={components[2]}% {'(baseline)' if components[3] == '1.txt' else '' }", color=colours[components[2] if components[3] == "0.txt" else "baseline"] ) # get ratio of x_1 to x_2 values
             # plot the difference (for both baseline and modified data!): selfish delay - honest delay 
+    p.legend.label_text_font = FONT
+    p.legend.label_text_font_size = SIZE
     show(p)
     export_png(p, filename=f"graphs/{graph_title}.png")
     
@@ -52,12 +66,22 @@ def plot_lin_exp_network_data(graph_title, x_label, y_label, data_dict):
     else:
         p = figure(title=graph_title, x_axis_label=x_label, y_axis_label=y_label)
         plot = p.circle
-
+    p.title.text_font = FONT
+    p.title.text_font_size = SIZE
+    p.yaxis.axis_label_text_font = FONT
+    p.yaxis.axis_label_text_font_size = SIZE
+    p.xaxis.axis_label_text_font = FONT
+    p.xaxis.axis_label_text_font_size = SIZE
+    p.xaxis.major_label_text_font = FONT
+    p.xaxis.major_label_text_font_size = SIZE
+    p.yaxis.major_label_text_font = FONT
+    p.yaxis.major_label_text_font_size = SIZE
     for filename, value in data_dict.items(): # plot a line for each file in the data_dict. we may want to plot multiple lines ...
         components = filename.split("_")
         if len(value) == 3: # we have x_1 and x_2, but note that x_2 = 0 since we fix honest delay to be 0
             plot(value[1], [x*100 for x in value[0]], line_width=1, legend_label=f"α={components[2].replace('.txt', '')}%", color=colours[components[2].replace(".txt", "")]) # just plot selfish delay
-
+    p.legend.label_text_font = FONT
+    p.legend.label_text_font_size = SIZE
     show(p)
     export_png(p, filename=f"graphs/{graph_title}.png")
 
