@@ -30,13 +30,14 @@ class Blockchain {
     BlockHeight _maxHeightPub;
     std::vector<std::vector<size_t>> _blocksIndex;
     std::vector<std::vector<Block *>> _smallestBlocks; // cache smallest blocks of a given height
-    std::vector<std::unique_ptr<Block>> _blocks;
+    
     
     std::vector<std::unique_ptr<Block>> _oldBlocks;
     
     Block *blockByMinerAtHeight(BlockHeight height, const Miner &miner) const;
     
 public:
+    std::vector<std::unique_ptr<Block>> _blocks;
     Blockchain(BlockchainSettings blockchainSettings);
     
     std::unique_ptr<Block> createBlock(const Block *parent, const Miner *miner, Value value);
